@@ -1,30 +1,56 @@
 package database.services;
 
 import entities.Pessoa;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 @NoArgsConstructor
-@AllArgsConstructor
+
 
 @Getter
 @Setter
 public class Queries {
     private Statement statement = null;
 
-    public void insertInto(String table, String columns, String values) throws SQLException {
+    private Connection connection = null;
 
-        String execult = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + " )";
+    public Queries(Connection conn) {
 
-        int rowsAfected = this.getStatement().executeUpdate(execult);
+        this.setConnection(conn);
 
-        System.out.println("Linhas afetadas: " + rowsAfected);
+        try {
+
+            this.setStatement(this.getConnection().createStatement());
+        }catch (SQLException ex){
+
+            System.out.println("Deu ruim: " + ex.getMessage());
+        }
+    }
+
+    public void insertInto(String table, String columns, String[] values) throws SQLException {
+
+        String execult = "INSERT INTO " + table + " (" + columns + ") VALUES (?, ?, ?, ?, ?) ";
+
+        try(PreparedStatement preparedStatement = this.getConnection().prepareStatement(execult)){
+
+            preparedStatement.setInt(1, Integer.parseInt(values[0]));
+
+            preparedStatement.setString(2, values[1]);
+
+            preparedStatement.setString(3, values[2]);
+
+            preparedStatement.setString(4, values[3]);
+
+            preparedStatement.setInt(5, Integer.parseInt(values[4]));
+
+            int rowsAfected = preparedStatement.executeUpdate();
+
+            System.out.println("Linhas afetadas: " + rowsAfected);
+        }catch ( Exception e){
+
+            System.out.println("Não passou no insert into" + e.getMessage());
+        }
     }
 
     public void deleteFrom (String table, String condition) throws SQLException {

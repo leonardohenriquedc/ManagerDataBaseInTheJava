@@ -14,16 +14,21 @@ public class MainClass {
 
     public static Statement st = dbpe.createConnectionAndGetStatement();
 
-    public static Queries queries = new Queries(st);
+    public static Queries queries = new Queries(dbpe.getConnection());
 
     public static void main(String[] args) throws Exception {
 
-        addPeoplesInDataBase();
+        //addPeoplesInDataBase();
+
+        //testMethodInsertInto();
 
         testMethodSelect();
 
+        //testMethodaValidationStringsToQueries();
+
     }
 
+    //Concertar essa porra pra evitar erro
     public static void addPeoplesInDataBase() throws Exception {
         List<Pessoa> pessoas = new ReadFiles().readFiles("pessoas.json");
 
@@ -32,11 +37,13 @@ public class MainClass {
         String columns = "id, nome, email, cpf, idade";
 
         pessoas.stream().forEach(p -> {
-            String values = Integer.toString(p.getId()) + ", "
-                    + " ' " + p.getNome() + " ' , "
-                    + " ' " + p.getEmail() + " ' , "
-                    + " ' " + p.getCpf() + " ' , "
-                    + Integer.toString(p.getIdade());
+            String[] values = {
+              Integer.toString(p.getId()),
+              p.getNome(),
+              p.getEmail(),
+              p.getCpf(),
+              Integer.toString(p.getIdade())
+            };
 
             try {
 
@@ -62,7 +69,7 @@ public class MainClass {
 
         String columns = "id, nome, email, cpf, idade";
 
-        String values = "1, 'Leonardo', 'leohencosta18@gmail.com', '34462624', 20";
+        String[] values = {"151", "'Pedro d'' oliveira'", "'oliveira@gmail.com'", "'6516519'", "21"};
 
         queries.insertInto(table, columns, values);
     }
@@ -83,5 +90,17 @@ public class MainClass {
         String table = "pessoas";
 
         queries.selectFrom(conditionOfSelect, table);
+    }
+
+    public static void testMethodaValidationStringsToQueries(){
+
+        String[] value = {"teste ' ", "teste ,,"};
+
+        ValidationStringsToQueries vstq = new ValidationStringsToQueries();
+
+        String valueValidation = vstq.validationColumn(value);
+
+        System.out.println(valueValidation.toString());
+
     }
 }
